@@ -1,0 +1,33 @@
+{%extends 'base.html' %} {% block content %}
+
+<div class="container">
+  <br /><br />
+  <div class="card mb-3">
+    <div class="row g-0">
+      <div class="col-md-4">
+        <img
+          src="{{producto.imagen.url}}"
+          class="img-fluid rounded-start"
+          alt="Imagen del producto"
+        />
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h5 class="card-title">{{ producto.nombre }}</h5>
+          <p class="card-text">{{ producto.descripcion }}</p>
+
+          <p class="card-text">${{ producto.precio }}</p>
+          <p class="card-text">
+            Pertenece a la categoría: {{ producto.categoria }}
+          </p>
+          <a href="{% url 'inicio' %}" class="btn btn-secondary">
+            Volver al inicio
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+<br /><br /><br /><br /><br /><br />
+{% endblock %}
