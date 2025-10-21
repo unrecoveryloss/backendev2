@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <div class="card mx-auto shadow-sm" style="max-width: 450px;">
+        <div class="card-body">
+            <h3 class="mb-3">Sesión cerrada correctamente</h3>
+            <p class="text-muted">Has cerrado sesión de forma segura.</p>
+            <a href="{% url 'login' %}" class="btn btn-primary mt-3">Iniciar sesión nuevamente</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

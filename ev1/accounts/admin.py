@@ -9,7 +9,7 @@ class UsuarioAdmin(admin.ModelAdmin):
     list_display = [
         'usuario', 'email', 'nombre', 'apellido',
         'telefono', 'cargo', 'estado_coloreado', 'mfa_activado',
-        'ultimo_acceso_formateado', 'session_count', 'acciones',
+        'ultimo_acceso', 'session_count', 'acciones',
     ]
     list_filter = ('cargo', 'estado', 'mfa')
     search_fields = ('usuario', 'email', 'nombre', 'apellido')
@@ -21,7 +21,7 @@ class UsuarioAdmin(admin.ModelAdmin):
             'fields': ('usuario', 'email', 'nombre', 'apellido', 'telefono')
         }),
         ('Estado y acceso', {
-            'fields': ('cargo', 'estado', 'mfa', 'activo', 'is_staff', 'ultimo_acceso', 'session_count')
+            'fields': ('cargo', 'estado', 'mfa', 'is_staff', 'ultimo_acceso', 'session_count')
         }),
     )
 
@@ -31,8 +31,8 @@ class UsuarioAdmin(admin.ModelAdmin):
         return format_html(
             '<a style="background:#4CAF50;color:white;padding:4px 8px;border-radius:4px;text-decoration:none;margin-right:4px;" href="{}">Editar</a>'
             '<a style="background:#f44336;color:white;padding:4px 8px;border-radius:4px;text-decoration:none;" href="{}">Eliminar</a>',
-            f'/admin/catalogo/categoria/{obj.id}/change/',
-            f'/admin/catalogo/categoria/{obj.id}/delete/'
+            f'/admin/accounts/usuario/{obj.id}/change/',
+            f'/admin/accounts/usuario/{obj.id}/delete/'
         )
     acciones.short_description = 'Acciones'
     

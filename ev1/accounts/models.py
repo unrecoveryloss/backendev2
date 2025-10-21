@@ -29,8 +29,9 @@ class UsuarioManager(BaseUserManager):
 class Usuario(AbstractBaseUser, PermissionsMixin):
     CARGO_OPCIONES = [
         ('ADMIN', 'Administrador'),
-        ('AUDITOR', 'Auditor'),
+        ('SUPERVISOR', 'Supervisor'),
         ('OPERADOR', 'Operador'),
+        ('CLIENTE', 'Cliente')
     ]
 
     ESTADO_OPCIONES = [

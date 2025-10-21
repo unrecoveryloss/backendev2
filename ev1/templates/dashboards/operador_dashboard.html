@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+{% load static %}
+
+<script src="{% static 'js/scripts.js' %}"></script>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Panel de Operador</h2>
+    <div class="card p-4 shadow-sm">
+        <p>Bienvenido {{ user.nombre|default:user.usuario }}.</p>
+        <ul>
+            <li>Registro y actualización de movimientos</li>
+            <li>Gestión de productos e inventario</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,25 +1,41 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm, UserCreationForm
 from django.contrib.auth import get_user_model
-Usuario = get_user_model()
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 
+Usuario = get_user_model()
+
 class CustomLoginForm(AuthenticationForm):
-    usuario = forms.CharField(
-        label="Usuario o correo",
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'usuario@dominio.com'})
+    username = forms.CharField(
+        label="Usuario",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'usuario'})
     )
     password = forms.CharField(
         label="Contraseña",
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': '********'})
     )
 
+    def confirm_login_allowed(self, user):
+        if not user.is_active:
+            raise ValidationError("Tu cuenta está inactiva. Contacta con el administrador.")
+        if user.estado == 'BLOQUEADO':
+            raise ValidationError("Tu cuenta está bloqueada.")
+        return super().confirm_login_allowed(user)
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if username:
+            self.cleaned_data['usuario'] = username
+        return username
+
+
 class CustomPasswordResetForm(PasswordResetForm):
     email = forms.EmailField(
         label="Correo electrónico",
         widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'usuario@dominio.com'})
     )
+
 
 class CustomSetPasswordForm(SetPasswordForm):
     new_password1 = forms.CharField(
@@ -30,6 +46,7 @@ class CustomSetPasswordForm(SetPasswordForm):
         label="Confirmar nueva contraseña",
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Repite tu contraseña'})
     )
+
 
 class CustomUserCreationForm(UserCreationForm):
     password1 = forms.CharField(
