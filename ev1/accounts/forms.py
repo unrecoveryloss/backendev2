@@ -3,6 +3,11 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, Set
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
+from .crud_forms import (
+    UsuarioForm, ProductoForm, CategoriaForm, 
+    ProveedorForm, ClienteForm, PedidoForm, BodegaForm,
+    TurnoForm, MovimientoInventarioForm
+)
 
 Usuario = get_user_model()
 

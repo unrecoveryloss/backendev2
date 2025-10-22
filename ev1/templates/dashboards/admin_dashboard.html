@@ -8,11 +8,54 @@
     <div class="row">
         <div class="col-md-3">
             <div class="list-group">
-                <a href="#usuarios" class="list-group-item list-group-item-action">Usuarios</a>
-                <a href="#productos" class="list-group-item list-group-item-action">Productos</a>
-                <a href="#proveedores" class="list-group-item list-group-item-action">Proveedores</a>
-                <a href="#pedidos" class="list-group-item list-group-item-action">Pedidos</a>
-                <a href="#inventarios" class="list-group-item list-group-item-action">Inventarios</a>
+                <a href="#usuarios" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Usuarios
+                    <a href="{% url 'usuarios_list' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-cog"></i> Gestionar
+                    </a>
+                </a>
+                <a href="#categorias" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Categorías
+                    <a href="{% url 'categorias_list' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-cog"></i> Gestionar
+                    </a>
+                </a>
+                <a href="#productos" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Productos
+                    <a href="{% url 'productos_list' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-cog"></i> Gestionar
+                    </a>
+                </a>
+                <a href="#proveedores" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Proveedores
+                    <a href="{% url 'proveedores_list' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-cog"></i> Gestionar
+                    </a>
+                </a>
+                <a href="#pedidos" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Pedidos
+                    <a href="{% url 'pedidos_list' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-cog"></i> Gestionar
+                    </a>
+                </a>
+                <a href="#inventarios" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Inventarios
+                    <a href="{% url 'bodegas_list' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-cog"></i> Gestionar
+                    </a>
+                </a>
+                <a href="#turnos" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Turnos
+                    <a href="{% url 'turnos_list' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-cog"></i> Gestionar
+                    </a>
+                </a>
+                <a href="#movimientos" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Movimientos Inventario
+                    <a href="{% url 'movimientos_list' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-cog"></i> Gestionar
+                    </a>
+                </a>
                 <a href="#reportes" class="list-group-item list-group-item-action">Reportes</a>
             </div>
         </div>
@@ -36,7 +79,7 @@
                             <thead class="table-dark">
                                 <tr>
                                     <th>ID</th>
-                                    <th>Nombre</th>
+                                    <th>Usuario</th>
                                     <th>Correo</th>
                                     <th>Cargo</th>
                                 </tr>
@@ -45,7 +88,7 @@
                                 {% for u in usuarios %}
                                 <tr>
                                     <td>{{ u.id }}</td>
-                                    <td>{{ u.nombre }}</td>
+                                    <td>{{ u.usuario }}</td>
                                     <td>{{ u.email }}</td>
                                     <td>{{ u.cargo }}</td>
                                 </tr>
@@ -78,8 +121,8 @@
                                 <tr>
                                     <td>{{ p.id }}</td>
                                     <td>{{ p.nombre }}</td>
-                                    <td>{{ p.precio }}</td>
-                                    <td>{{ p.stock }}</td>
+                                    <td>{{ p.precio_venta }}</td>
+                                    <td>{{ p.stock_total }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -89,7 +132,194 @@
             </div>
             {% endif %}
 
-            <!-- Aquí puedes repetir el mismo patrón para proveedores, pedidos, inventarios, reportes -->
+            {% if categorias %}
+            <div id="categorias" class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5>Lista de Categorías</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Productos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for categoria in categorias %}
+                                <tr>
+                                    <td>{{ categoria.id }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ categoria.nombre }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ categoria.producto_set.count }} productos</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if proveedores %}
+            <div id="proveedores" class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5>Lista de Proveedores</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Razón Social</th>
+                                    <th>Email</th>
+                                    <th>Teléfono</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for prov in proveedores %}
+                                <tr>
+                                    <td>{{ prov.id }}</td>
+                                    <td>{{ prov.razon_social }}</td>
+                                    <td>{{ prov.email }}</td>
+                                    <td>{{ prov.telefono|default:"No especificado" }}</td>
+                                    <td>
+                                        <span
+                                            class="badge {% if prov.estado == 'ACTIVO' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ prov.get_estado_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if pedidos %}
+            <div id="pedidos" class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5>Lista de Pedidos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cliente</th>
+                                    <th>Fecha</th>
+                                    <th>Estado</th>
+                                    <th>Dirección</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pedido in pedidos %}
+                                <tr>
+                                    <td>{{ pedido.id }}</td>
+                                    <td>{{ pedido.cliente.nombre }}</td>
+                                    <td>{{ pedido.fecha_pedido|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if pedido.estado == 'ENTREGADO' %}bg-success
+                                            {% elif pedido.estado == 'ENVIADO' %}bg-primary
+                                            {% elif pedido.estado == 'EN_PROCESO' %}bg-warning
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ pedido.get_estado_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ pedido.direccion_envio|truncatechars:30 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if inventarios %}
+            <div id="inventarios" class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-white">
+                    <h5>Lista de Bodegas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Ubicación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bodega in inventarios %}
+                                <tr>
+                                    <td>{{ bodega.id }}</td>
+                                    <td>{{ bodega.nombre }}</td>
+                                    <td>{{ bodega.ubicacion|default:"No especificada" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if reportes %}
+            <div id="reportes" class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5>Reportes y Estadísticas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ usuarios|length }}</h4>
+                                    <p>Usuarios</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ productos|length }}</h4>
+                                    <p>Productos</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ pedidos|length }}</h4>
+                                    <p>Pedidos</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-dark">
+                                <div class="card-body text-center">
+                                    <h4>{{ proveedores|length }}</h4>
+                                    <p>Proveedores</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

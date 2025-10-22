@@ -1,0 +1,280 @@
+{% extends "crud/base_crud.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header del módulo -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="card-title text-primary mb-3">Módulo de Turnos (Transaccional)</h2>
+                            <p class="card-text text-muted mb-0">Gestiona los turnos de trabajo de los empleados.</p>
+                            <ul class="list-unstyled mt-3 mb-0">
+                                <li class="mb-1">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>CRUD completo:</strong> crear, editar y eliminar turnos.
+                                </li>
+                                <li class="mb-1">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Gestión de horarios de trabajo.
+                                </li>
+                                <li class="mb-1">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Asociación con trabajadores.
+                                </li>
+                                <li class="mb-1">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Control de observaciones y notas.
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-home me-1"></i>Volver al Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Formulario (lado izquierdo) -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Formulario de Turno</h5>
+                </div>
+                <div class="card-body">
+                    <form id="turnoForm" method="post" action="{% url 'turno_create' %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_trabajador" class="form-label">Trabajador (requerido)</label>
+                            <select class="form-select" id="id_trabajador" name="trabajador" required>
+                                <option value="">Seleccione un trabajador</option>
+                                {% for trabajador in trabajadores %}
+                                <option value="{{ trabajador.id }}">{{ trabajador.nombre }} - {{ trabajador.cargo.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_fecha" class="form-label">Fecha (requerido)</label>
+                            <input type="date" class="form-control" id="id_fecha" name="fecha" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_horario_inicio" class="form-label">Hora de inicio (requerido)</label>
+                                <input type="time" class="form-control" id="id_horario_inicio" name="horario_inicio" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_horario_fin" class="form-label">Hora de fin (requerido)</label>
+                                <input type="time" class="form-control" id="id_horario_fin" name="horario_fin" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Nota:</strong> Los turnos se registrarán con la fecha y hora actuales.
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Guardar
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">
+                                <i class="fas fa-eraser me-1"></i>Limpiar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de datos (lado derecho) -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Turnos</h5>
+                    <button class="btn btn-success btn-sm" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel me-1"></i>Exportar a Excel
+                    </button>
+                </div>
+                <div class="card-body">
+                    <!-- Barra de búsqueda y filtros -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Buscar por trabajador..." value="{{ search }}">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="date" class="form-control" id="fechaFilter" placeholder="Filtrar por fecha" value="{{ fecha_filter }}">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary w-100" onclick="applyFilters()">
+                                <i class="fas fa-search me-1"></i>Buscar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de datos -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="dataTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Trabajador</th>
+                                    <th>Fecha</th>
+                                    <th>Horario</th>
+                                    <th>Duración</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for turno in turnos %}
+                                <tr>
+                                    <td><strong>#{{ turno.id }}</strong></td>
+                                    <td>{{ turno.trabajador.nombre }}</td>
+                                    <td>{{ turno.fecha|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ turno.horario_inicio|time:"H:i" }} - {{ turno.horario_fin|time:"H:i" }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ turno.duracion_horas }}h</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="editTurno({{ turno.id }})">
+                                                <i class="fas fa-edit"></i> Editar
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" onclick="deleteTurno({{ turno.id }})">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">No hay turnos registrados</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    {% if turnos.has_other_pages %}
+                    <nav aria-label="Paginación">
+                        <ul class="pagination justify-content-center">
+                            {% if turnos.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">&laquo; Primera</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ turnos.previous_page_number }}">Anterior</a>
+                            </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    Página {{ turnos.number }} de {{ turnos.paginator.num_pages }}
+                                </span>
+                            </li>
+                            
+                            {% if turnos.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ turnos.next_page_number }}">Siguiente</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ turnos.paginator.num_pages }}">Última &raquo;</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Está seguro de que desea eliminar este turno? Esta acción no se puede deshacer.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Funciones JavaScript para el CRUD
+function clearForm() {
+    document.getElementById('turnoForm').reset();
+}
+
+function applyFilters() {
+    const search = document.getElementById('searchInput').value;
+    const fecha = document.getElementById('fechaFilter').value;
+    
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (fecha) params.append('fecha', fecha);
+    
+    window.location.href = '{% url "turnos_list" %}?' + params.toString();
+}
+
+function editTurno(id) {
+    window.location.href = '{% url "turno_edit" 0 %}'.replace('0', id);
+}
+
+function deleteTurno(id) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+    
+    document.getElementById('confirmDelete').onclick = function() {
+        fetch('{% url "turno_delete" 0 %}'.replace('0', id), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+        modal.hide();
+    };
+}
+
+function exportToExcel() {
+    alert('Función de exportación a Excel en desarrollo');
+}
+</script>
+{% endblock %}

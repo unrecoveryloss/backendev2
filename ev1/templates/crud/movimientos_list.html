@@ -1,0 +1,345 @@
+{% extends "crud/base_crud.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header del módulo -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="card-title text-primary mb-3">Módulo de Movimientos de Inventario (Transaccional)</h2>
+                            <p class="card-text text-muted mb-0">Gestiona los movimientos de inventario entre bodegas.</p>
+                            <ul class="list-unstyled mt-3 mb-0">
+                                <li class="mb-1">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>CRUD completo:</strong> crear, editar y eliminar movimientos.
+                                </li>
+                                <li class="mb-1">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Control de ingresos y egresos.
+                                </li>
+                                <li class="mb-1">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Gestión de lotes y series.
+                                </li>
+                                <li class="mb-1">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Trazabilidad completa de productos.
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-home me-1"></i>Volver al Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Formulario (lado izquierdo) -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Formulario de Movimiento</h5>
+                </div>
+                <div class="card-body">
+                    <form id="movimientoForm" method="post" action="{% url 'movimiento_create' %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_producto" class="form-label">Producto (requerido)</label>
+                            <select class="form-select" id="id_producto" name="producto" required>
+                                <option value="">Seleccione un producto</option>
+                                {% for producto in productos %}
+                                <option value="{{ producto.id }}">{{ producto.nombre }} - {{ producto.sku }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_proveedor" class="form-label">Proveedor</label>
+                            <select class="form-select" id="id_proveedor" name="proveedor">
+                                <option value="">Seleccione un proveedor</option>
+                                {% for proveedor in proveedores %}
+                                <option value="{{ proveedor.id }}">{{ proveedor.razon_social }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_bodega" class="form-label">Bodega (requerido)</label>
+                            <select class="form-select" id="id_bodega" name="bodega" required>
+                                <option value="">Seleccione una bodega</option>
+                                {% for bodega in bodegas %}
+                                <option value="{{ bodega.id }}">{{ bodega.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_tipo" class="form-label">Tipo de movimiento (requerido)</label>
+                            <select class="form-select" id="id_tipo" name="tipo" required>
+                                <option value="">Seleccione el tipo</option>
+                                <option value="INGRESO">Ingreso</option>
+                                <option value="EGRESO">Egreso</option>
+                                <option value="TRANSFERENCIA">Transferencia</option>
+                                <option value="AJUSTE">Ajuste</option>
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_cantidad" class="form-label">Cantidad (requerido)</label>
+                            <input type="number" class="form-control" id="id_cantidad" name="cantidad" 
+                                   step="0.01" min="0" required placeholder="0.00">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_lote" class="form-label">Lote</label>
+                                <input type="text" class="form-control" id="id_lote" name="lote" 
+                                       maxlength="50" placeholder="LOTE001">
+                                <div class="invalid-feedback"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_serie" class="form-label">Serie</label>
+                                <input type="text" class="form-control" id="id_serie" name="serie" 
+                                       maxlength="50" placeholder="SER001">
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Nota:</strong> La fecha y hora se registrarán automáticamente al guardar el movimiento.
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Guardar
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">
+                                <i class="fas fa-eraser me-1"></i>Limpiar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de datos (lado derecho) -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Movimientos de Inventario</h5>
+                    <button class="btn btn-success btn-sm" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel me-1"></i>Exportar a Excel
+                    </button>
+                </div>
+                <div class="card-body">
+                    <!-- Barra de búsqueda y filtros -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Buscar por producto, lote..." value="{{ search }}">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="tipoFilter">
+                                <option value="">Tipo: todos</option>
+                                <option value="INGRESO" {% if tipo_filter == 'INGRESO' %}selected{% endif %}>Ingreso</option>
+                                <option value="EGRESO" {% if tipo_filter == 'EGRESO' %}selected{% endif %}>Egreso</option>
+                                <option value="TRANSFERENCIA" {% if tipo_filter == 'TRANSFERENCIA' %}selected{% endif %}>Transferencia</option>
+                                <option value="AJUSTE" {% if tipo_filter == 'AJUSTE' %}selected{% endif %}>Ajuste</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" id="fechaFilter" placeholder="Filtrar por fecha" value="{{ fecha_filter }}">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary w-100" onclick="applyFilters()">
+                                <i class="fas fa-search me-1"></i>Buscar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de datos -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="dataTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Producto</th>
+                                    <th>Tipo</th>
+                                    <th>Cantidad</th>
+                                    <th>Bodega</th>
+                                    <th>Fecha</th>
+                                    <th>Lote/Serie</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for movimiento in movimientos %}
+                                <tr>
+                                    <td><strong>#{{ movimiento.id }}</strong></td>
+                                    <td>{{ movimiento.producto.nombre }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if movimiento.tipo == 'INGRESO' %}bg-success
+                                            {% elif movimiento.tipo == 'EGRESO' %}bg-danger
+                                            {% elif movimiento.tipo == 'TRANSFERENCIA' %}bg-primary
+                                            {% else %}bg-warning{% endif %}">
+                                            {{ movimiento.get_tipo_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ movimiento.cantidad }}</span>
+                                    </td>
+                                    <td>{{ movimiento.bodega.nombre }}</td>
+                                    <td>{{ movimiento.fecha|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        {% if movimiento.lote %}
+                                        <small class="text-muted">L: {{ movimiento.lote }}</small><br>
+                                        {% endif %}
+                                        {% if movimiento.serie %}
+                                        <small class="text-muted">S: {{ movimiento.serie }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="editMovimiento({{ movimiento.id }})">
+                                                <i class="fas fa-edit"></i> Editar
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" onclick="deleteMovimiento({{ movimiento.id }})">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">No hay movimientos registrados</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    {% if movimientos.has_other_pages %}
+                    <nav aria-label="Paginación">
+                        <ul class="pagination justify-content-center">
+                            {% if movimientos.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">&laquo; Primera</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ movimientos.previous_page_number }}">Anterior</a>
+                            </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    Página {{ movimientos.number }} de {{ movimientos.paginator.num_pages }}
+                                </span>
+                            </li>
+                            
+                            {% if movimientos.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ movimientos.next_page_number }}">Siguiente</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ movimientos.paginator.num_pages }}">Última &raquo;</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Está seguro de que desea eliminar este movimiento de inventario? Esta acción no se puede deshacer.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Funciones JavaScript para el CRUD
+function clearForm() {
+    document.getElementById('movimientoForm').reset();
+}
+
+function applyFilters() {
+    const search = document.getElementById('searchInput').value;
+    const tipo = document.getElementById('tipoFilter').value;
+    const fecha = document.getElementById('fechaFilter').value;
+    
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (tipo) params.append('tipo', tipo);
+    if (fecha) params.append('fecha', fecha);
+    
+    window.location.href = '{% url "movimientos_list" %}?' + params.toString();
+}
+
+function editMovimiento(id) {
+    window.location.href = '{% url "movimiento_edit" 0 %}'.replace('0', id);
+}
+
+function deleteMovimiento(id) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+    
+    document.getElementById('confirmDelete').onclick = function() {
+        fetch('{% url "movimiento_delete" 0 %}'.replace('0', id), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+        modal.hide();
+    };
+}
+
+function exportToExcel() {
+    alert('Función de exportación a Excel en desarrollo');
+}
+</script>
+{% endblock %}

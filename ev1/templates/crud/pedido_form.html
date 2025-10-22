@@ -1,0 +1,113 @@
+{% extends "crud/base_form.html" %}
+{% load static %}
+
+{% block form_content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    {% if action == 'edit' %}Editar Pedido{% else %}Crear Nuevo Pedido{% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" id="pedidoForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="id_cliente" class="form-label">Cliente (requerido)</label>
+                        <select class="form-select" id="id_cliente" name="cliente" required>
+                            <option value="">Seleccione un cliente...</option>
+                            {% for cliente in clientes %}
+                            <option value="{{ cliente.id }}" 
+                                    {% if form.cliente.value == cliente.id %}selected{% endif %}>
+                                {{ cliente.nombre|default:cliente.usuario }} ({{ cliente.email }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_productos" class="form-label">Productos (requerido)</label>
+                        <select class="form-select" id="id_productos" name="productos" multiple required>
+                            {% for producto in productos %}
+                            <option value="{{ producto.id }}" 
+                                    {% if producto.id in form.productos.value %}selected{% endif %}>
+                                {{ producto.nombre }} - ${{ producto.precio_venta }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">Mantén presionado Ctrl para seleccionar múltiples productos</small>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_estado" class="form-label">Estado</label>
+                        <select class="form-select" id="id_estado" name="estado">
+                            <option value="PENDIENTE" {% if form.estado.value == 'PENDIENTE' or not form.estado.value %}selected{% endif %}>Pendiente</option>
+                            <option value="EN_PROCESO" {% if form.estado.value == 'EN_PROCESO' %}selected{% endif %}>En Proceso</option>
+                            <option value="ENVIADO" {% if form.estado.value == 'ENVIADO' %}selected{% endif %}>Enviado</option>
+                            <option value="ENTREGADO" {% if form.estado.value == 'ENTREGADO' %}selected{% endif %}>Entregado</option>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_direccion_envio" class="form-label">Dirección de envío (requerido)</label>
+                        <textarea class="form-control" id="id_direccion_envio" name="direccion_envio" 
+                                  rows="3" maxlength="500" required placeholder="Ingrese la dirección completa de envío">{{ form.direccion_envio.value|default:'' }}</textarea>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Guardar
+                        </button>
+                        <a href="{% url 'pedidos_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Volver
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('pedidoForm').addEventListener('submit', function(e) {
+    // Validación básica
+    const requiredFields = ['cliente', 'direccion_envio'];
+    let isValid = true;
+    
+    requiredFields.forEach(fieldName => {
+        const field = document.getElementById(`id_${fieldName}`);
+        if (!field.value.trim()) {
+            field.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            field.classList.remove('is-invalid');
+        }
+    });
+    
+    // Validar productos seleccionados
+    const productos = document.getElementById('id_productos');
+    if (productos.selectedOptions.length === 0) {
+        productos.classList.add('is-invalid');
+        isValid = false;
+    } else {
+        productos.classList.remove('is-invalid');
+    }
+    
+    if (!isValid) {
+        e.preventDefault();
+        alert('Por favor, complete todos los campos requeridos');
+        return;
+    }
+    
+    // Permitir que el formulario se envíe normalmente
+});
+</script>
+{% endblock %}

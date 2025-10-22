@@ -1,0 +1,357 @@
+{% extends "crud/base_crud.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header del módulo -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title text-primary mb-3">Módulo Proveedores (Maestro)</h2>
+                    <p class="card-text text-muted mb-0">Permite gestionar toda la información de los proveedores:</p>
+                    <ul class="list-unstyled mt-3 mb-0">
+                        <li class="mb-1">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Identificación:</strong> RUT (tax ID), legal name, trade name.
+                        </li>
+                        <li class="mb-1">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Datos de contacto:</strong> Email, phone, address, city, country.
+                        </li>
+                        <li class="mb-1">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Condiciones comerciales:</strong> Payment terms, currency, discounts.
+                        </li>
+                        <li class="mb-1">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Relación con productos:</strong> Preferred supplier, costs, and lead time.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Formulario (lado izquierdo) -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Formulario de Proveedor</h5>
+                </div>
+                <div class="card-body">
+                    <form id="proveedorForm" method="post" action="{% url 'proveedor_create' %}">
+                        {% csrf_token %}
+                        
+                        <!-- Pestañas del formulario -->
+                        <ul class="nav nav-tabs mb-3" id="proveedorTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="identificacion-tab" data-bs-toggle="tab" data-bs-target="#identificacion" type="button" role="tab">
+                                    1. Identificación y contacto
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="direccion-tab" data-bs-toggle="tab" data-bs-target="#direccion" type="button" role="tab">
+                                    2. Dirección y comercial
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="productos-tab" data-bs-toggle="tab" data-bs-target="#productos" type="button" role="tab">
+                                    3. Relación con productos
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="proveedorTabsContent">
+                            <!-- Pestaña 1: Identificación y contacto -->
+                            <div class="tab-pane fade show active" id="identificacion" role="tabpanel">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Identificación legal y contacto</label>
+                                    <div class="row">
+                                        <div class="col-12 mb-2">
+                                            <label for="id_rut_nif" class="form-label">RUT/NIF (requerido, único)</label>
+                                            <input type="text" class="form-control" id="id_rut_nif" name="rut_nif" placeholder="76.543.210-5" required>
+                                        </div>
+                                        <div class="col-12 mb-2">
+                                            <label for="id_razon_social" class="form-label">Razón social (requerido)</label>
+                                            <input type="text" class="form-control" id="id_razon_social" name="razon_social" placeholder="Proveedor S.A." required>
+                                        </div>
+                                        <div class="col-12 mb-2">
+                                            <label for="id_nombre_fantasia" class="form-label">Nombre de fantasía (opcional)</label>
+                                            <input type="text" class="form-control" id="id_nombre_fantasia" name="nombre_fantasia" placeholder="ProveeMax">
+                                        </div>
+                                        <div class="col-12 mb-2">
+                                            <label for="id_email" class="form-label">Email (requerido)</label>
+                                            <input type="email" class="form-control" id="id_email" name="email" placeholder="contacto@proveedor.cl" required>
+                                        </div>
+                                        <div class="col-12 mb-2">
+                                            <label for="id_telefono" class="form-label">Teléfono (opcional)</label>
+                                            <input type="text" class="form-control" id="id_telefono" name="telefono" placeholder="+56 2 2345 6789">
+                                        </div>
+                                        <div class="col-12 mb-2">
+                                            <label for="id_sitio_web" class="form-label">Sitio web (opcional)</label>
+                                            <input type="url" class="form-control" id="id_sitio_web" name="sitio_web" placeholder="https://proveedor.cl">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pestaña 2: Dirección y comercial -->
+                            <div class="tab-pane fade" id="direccion" role="tabpanel">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Dirección y datos comerciales</label>
+                                    <div class="row">
+                                        <div class="col-12 mb-2">
+                                            <label for="id_direccion" class="form-label">Dirección</label>
+                                            <input type="text" class="form-control" id="id_direccion" name="direccion" placeholder="Av. Principal 123">
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <label for="id_ciudad" class="form-label">Ciudad</label>
+                                            <input type="text" class="form-control" id="id_ciudad" name="ciudad" placeholder="Santiago">
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <label for="id_pais" class="form-label">País</label>
+                                            <input type="text" class="form-control" id="id_pais" name="pais" placeholder="Chile" value="Chile">
+                                        </div>
+                                        <div class="col-12 mb-2">
+                                            <label for="id_estado" class="form-label">Estado</label>
+                                            <select class="form-select" id="id_estado" name="estado" required>
+                                                <option value="ACTIVO" selected>ACTIVO</option>
+                                                <option value="BLOQUEADO">BLOQUEADO</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pestaña 3: Relación con productos -->
+                            <div class="tab-pane fade" id="productos" role="tabpanel">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Relación con productos</label>
+                                    <div class="row">
+                                        <div class="col-12 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="id_preferred_supplier" name="preferred_supplier">
+                                                <label class="form-check-label" for="id_preferred_supplier">
+                                                    Proveedor preferido
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <label for="id_lead_time" class="form-label">Tiempo de entrega (días)</label>
+                                            <input type="number" class="form-control" id="id_lead_time" name="lead_time" min="0" placeholder="7">
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <label for="id_descuento" class="form-label">Descuento (%)</label>
+                                            <input type="number" class="form-control" id="id_descuento" name="descuento" min="0" max="100" step="0.01" placeholder="5.00">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Guardar
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">
+                                <i class="fas fa-eraser me-1"></i>Limpiar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de datos (lado derecho) -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Proveedores</h5>
+                    <button class="btn btn-success btn-sm" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel me-1"></i>Exportar a Excel
+                    </button>
+                </div>
+                <div class="card-body">
+                    <!-- Barra de búsqueda y filtros -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Buscar por RUT/NIF o razón social" value="{{ search }}">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="estadoFilter">
+                                <option value="">Estado: todos</option>
+                                <option value="ACTIVO" {% if estado_filter == 'ACTIVO' %}selected{% endif %}>ACTIVO</option>
+                                <option value="BLOQUEADO" {% if estado_filter == 'BLOQUEADO' %}selected{% endif %}>BLOQUEADO</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-primary w-100" onclick="applyFilters()">
+                                <i class="fas fa-search me-1"></i>Buscar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de datos -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="dataTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>RUT/NIF</th>
+                                    <th>Razón social</th>
+                                    <th>Estado</th>
+                                    <th>Email</th>
+                                    <th>Teléfono</th>
+                                    <th>Ciudad</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for proveedor in proveedores %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ proveedor.rut_nif }}</strong>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ proveedor.razon_social }}</strong>
+                                            {% if proveedor.nombre_fantasia %}
+                                            <br><small class="text-muted">{{ proveedor.nombre_fantasia }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if proveedor.estado == 'ACTIVO' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ proveedor.get_estado_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ proveedor.email }}</td>
+                                    <td>{{ proveedor.telefono|default:"-" }}</td>
+                                    <td>{{ proveedor.ciudad|default:"-" }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="editProveedor({{ proveedor.id }})">
+                                                <i class="fas fa-edit"></i> Editar
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" onclick="deleteProveedor({{ proveedor.id }})">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">No hay proveedores registrados</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    {% if proveedores.has_other_pages %}
+                    <nav aria-label="Paginación">
+                        <ul class="pagination justify-content-center">
+                            {% if proveedores.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">&laquo; Primera</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ proveedores.previous_page_number }}">Anterior</a>
+                            </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    Página {{ proveedores.number }} de {{ proveedores.paginator.num_pages }}
+                                </span>
+                            </li>
+                            
+                            {% if proveedores.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ proveedores.next_page_number }}">Siguiente</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ proveedores.paginator.num_pages }}">Última &raquo;</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Está seguro de que desea eliminar este proveedor? Esta acción no se puede deshacer.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Funciones JavaScript para el CRUD
+function clearForm() {
+    document.getElementById('proveedorForm').reset();
+}
+
+function applyFilters() {
+    const search = document.getElementById('searchInput').value;
+    const estado = document.getElementById('estadoFilter').value;
+    
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (estado) params.append('estado', estado);
+    
+    window.location.href = '{% url "proveedores_list" %}?' + params.toString();
+}
+
+function editProveedor(id) {
+    window.location.href = '{% url "proveedor_edit" 0 %}'.replace('0', id);
+}
+
+function deleteProveedor(id) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+    
+    document.getElementById('confirmDelete').onclick = function() {
+        fetch('{% url "proveedor_delete" 0 %}'.replace('0', id), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+        modal.hide();
+    };
+}
+
+function exportToExcel() {
+    alert('Función de exportación a Excel en desarrollo');
+}
+</script>
+{% endblock %}

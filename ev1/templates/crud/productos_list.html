@@ -1,0 +1,355 @@
+{% extends "crud/base_crud.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header del módulo -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title text-primary mb-3">Módulo de Productos (Maestro)</h2>
+                    <p class="card-text text-muted mb-0">Gestiona el catálogo completo de productos del sistema.</p>
+                    <ul class="list-unstyled mt-3 mb-0">
+                        <li class="mb-1">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>CRUD completo:</strong> crear, editar y eliminar productos.
+                        </li>
+                        <li class="mb-1">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Gestión de categorías y precios.
+                        </li>
+                        <li class="mb-1">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Control de stock y alertas.
+                        </li>
+                        <li class="mb-1">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Gestión de imágenes y códigos.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Formulario (lado izquierdo) -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Formulario de Producto</h5>
+                </div>
+                <div class="card-body">
+                    <form id="productoForm" method="post" action="{% url 'producto_create' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Información básica -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Información Básica</label>
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label for="id_sku" class="form-label">SKU</label>
+                                    <input type="text" class="form-control" id="id_sku" name="sku" placeholder="SKU-0001">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label for="id_ean_upc" class="form-label">EAN/UPC</label>
+                                    <input type="text" class="form-control" id="id_ean_upc" name="ean_upc" placeholder="1234567890123">
+                                </div>
+                                <div class="col-12 mb-2">
+                                    <label for="id_nombre" class="form-label">Nombre del producto (requerido)</label>
+                                    <input type="text" class="form-control" id="id_nombre" name="nombre" placeholder="Nombre del producto" required>
+                                </div>
+                                <div class="col-12 mb-2">
+                                    <label for="id_descripcion" class="form-label">Descripción</label>
+                                    <textarea class="form-control" id="id_descripcion" name="descripcion" rows="3" placeholder="Descripción del producto"></textarea>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label for="id_categoria" class="form-label">Categoría</label>
+                                    <select class="form-select" id="id_categoria" name="categoria">
+                                        <option value="">Seleccione una categoría</option>
+                                        {% for categoria in categorias %}
+                                        <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label for="id_marca" class="form-label">Marca</label>
+                                    <input type="text" class="form-control" id="id_marca" name="marca" placeholder="Marca del producto">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Precios y stock -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Precios y Stock</label>
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label for="id_precio_venta" class="form-label">Precio de venta (requerido)</label>
+                                    <input type="number" class="form-control" id="id_precio_venta" name="precio_venta" step="0.01" min="0" required>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label for="id_costo_estandar" class="form-label">Costo estándar</label>
+                                    <input type="number" class="form-control" id="id_costo_estandar" name="costo_estandar" step="0.01" min="0">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label for="id_stock_minimo" class="form-label">Stock mínimo</label>
+                                    <input type="number" class="form-control" id="id_stock_minimo" name="stock_minimo" min="0" value="0">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label for="id_stock_maximo" class="form-label">Stock máximo</label>
+                                    <input type="number" class="form-control" id="id_stock_maximo" name="stock_maximo" min="0">
+                                </div>
+                                <div class="col-12 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="id_impuesto_iva" name="impuesto_iva" checked>
+                                        <label class="form-check-label" for="id_impuesto_iva">
+                                            Aplica IVA (19%)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Imagen -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Imagen del Producto</label>
+                            <input type="file" class="form-control" id="id_imagen" name="imagen" accept="image/*">
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Guardar
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">
+                                <i class="fas fa-eraser me-1"></i>Limpiar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de datos (lado derecho) -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Productos</h5>
+                    <button class="btn btn-success btn-sm" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel me-1"></i>Exportar a Excel
+                    </button>
+                </div>
+                <div class="card-body">
+                    <!-- Barra de búsqueda y filtros -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Buscar por nombre, SKU..." value="{{ search }}">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="categoriaFilter">
+                                <option value="">Categoría: todas</option>
+                                {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}" {% if categoria_filter == categoria.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ categoria.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="stockFilter">
+                                <option value="">Stock: todos</option>
+                                <option value="bajo">Stock bajo</option>
+                                <option value="normal">Stock normal</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary w-100" onclick="applyFilters()">
+                                <i class="fas fa-search me-1"></i>Buscar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de datos -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="dataTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Imagen</th>
+                                    <th>Nombre</th>
+                                    <th>SKU</th>
+                                    <th>Categoría</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for producto in productos %}
+                                <tr class="{% if producto.alerta_bajo_stock %}table-warning{% endif %}">
+                                    <td>{{ producto.id }}</td>
+                                    <td>
+                                        {% if producto.imagen %}
+                                        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% else %}
+                                        <div class="bg-light d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                            <i class="fas fa-image text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ producto.nombre }}</strong>
+                                        {% if producto.alerta_bajo_stock %}
+                                        <br><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> Stock bajo</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ producto.sku|default:"Sin SKU" }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ producto.categoria.nombre|default:"Sin categoría" }}</span>
+                                    </td>
+                                    <td>
+                                        <strong>${{ producto.precio_venta|floatformat:0 }}</strong>
+                                        {% if producto.impuesto_iva %}
+                                        <br><small class="text-muted">+ IVA</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if producto.alerta_bajo_stock %}bg-warning{% else %}bg-success{% endif %}">
+                                            {{ producto.stock_total }}
+                                        </span>
+                                        <br><small class="text-muted">Mín: {{ producto.stock_minimo }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">Activo</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="editProducto({{ producto.id }})">
+                                                <i class="fas fa-edit"></i> Editar
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" onclick="deleteProducto({{ producto.id }})">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted">No hay productos registrados</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    {% if productos.has_other_pages %}
+                    <nav aria-label="Paginación">
+                        <ul class="pagination justify-content-center">
+                            {% if productos.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">&laquo; Primera</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ productos.previous_page_number }}">Anterior</a>
+                            </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    Página {{ productos.number }} de {{ productos.paginator.num_pages }}
+                                </span>
+                            </li>
+                            
+                            {% if productos.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ productos.next_page_number }}">Siguiente</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ productos.paginator.num_pages }}">Última &raquo;</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Está seguro de que desea eliminar este producto? Esta acción no se puede deshacer.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Funciones JavaScript para el CRUD
+function clearForm() {
+    document.getElementById('productoForm').reset();
+}
+
+function applyFilters() {
+    const search = document.getElementById('searchInput').value;
+    const categoria = document.getElementById('categoriaFilter').value;
+    const stock = document.getElementById('stockFilter').value;
+    
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (categoria) params.append('categoria', categoria);
+    if (stock) params.append('stock', stock);
+    
+    window.location.href = '{% url "productos_list" %}?' + params.toString();
+}
+
+function editProducto(id) {
+    window.location.href = '{% url "producto_edit" 0 %}'.replace('0', id);
+}
+
+function deleteProducto(id) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+    
+    document.getElementById('confirmDelete').onclick = function() {
+        fetch('{% url "producto_delete" 0 %}'.replace('0', id), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+        modal.hide();
+    };
+}
+
+function exportToExcel() {
+    alert('Función de exportación a Excel en desarrollo');
+}
+</script>
+{% endblock %}

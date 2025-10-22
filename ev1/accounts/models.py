@@ -83,3 +83,9 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.usuario} ({self.cargo})"
+    
+    def save(self, *args, **kwargs):
+        # Actualizar último acceso al guardar
+        if self.pk:  # Solo si ya existe el usuario
+            self.ultimo_acceso = timezone.now()
+        super().save(*args, **kwargs)

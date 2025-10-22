@@ -1,0 +1,54 @@
+{% extends "crud/base_crud.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        {% if action == 'edit' %}Editar Categoría{% else %}Crear Categoría{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="categoriaForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_nombre" class="form-label">Nombre de la categoría (requerido)</label>
+                            <input type="text" class="form-control" id="id_nombre" name="nombre" 
+                                   value="{{ form.nombre.value|default:'' }}" maxlength="50" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Guardar
+                            </button>
+                            <a href="{% url 'categorias_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Volver
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('categoriaForm').addEventListener('submit', function(e) {
+    const nombre = document.getElementById('id_nombre');
+    if (!nombre.value.trim()) {
+        e.preventDefault();
+        nombre.classList.add('is-invalid');
+        alert('El nombre de la categoría es requerido');
+        return;
+    }
+    
+    nombre.classList.remove('is-invalid');
+    // Permitir que el formulario se envíe normalmente
+});
+</script>
+{% endblock %}

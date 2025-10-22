@@ -1,15 +1,19 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout, get_user_model
 from django.shortcuts import redirect, render
+from django.utils import timezone
 from django.contrib.auth.views import (
     PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView
 )
+
+from .models import Usuario
+from catalogo.models import Producto, Categoria
+from gestion.models  import Cliente, Proveedor, Pedido, Turno, Bodega, MovimientoInventario, Cargo
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from .forms import (
-    CustomLoginForm,
     CustomPasswordResetForm,
     CustomSetPasswordForm,
     CustomUserCreationForm
@@ -22,6 +26,10 @@ def login_view(request):
         form = AuthenticationForm(request, data=request.POST) 
         if form.is_valid():
             user = form.get_user()   
+            # Actualizar último acceso
+            user.ultimo_acceso = timezone.now()
+            user.session_count += 1
+            user.save()
             login(request, user)
 
             cargo = getattr(user, 'cargo', None)
@@ -105,25 +113,129 @@ def verificar_cargo(usuario, cargos_permitidos):
 def admin_dashboard(request):
     if not verificar_cargo(request.user, ['ADMIN']):
         return redirect('login')
-    return render(request, 'dashboards/admin_dashboard.html')
+    
+    context = {
+        'user': request.user,
+        'usuarios': Usuario.objects.all(),
+        'productos': Producto.objects.all(),
+        'categorias': Categoria.objects.all(),
+        'proveedores': Proveedor.objects.all(),
+        'pedidos': Pedido.objects.all(),
+        'inventarios': Bodega.objects.all(),
+        'reportes': True 
+    }
+    return render(request, 'dashboards/admin_dashboard.html', context)
 
 
 @login_required
 def supervisor_dashboard(request):
     if not verificar_cargo(request.user, ['SUPERVISOR', 'ADMIN']):
         return redirect('login')
-    return render(request, 'dashboards/supervisor_dashboard.html')
+    
+    context = {
+        'user': request.user,
+        'productos': Producto.objects.all(),
+        'proveedores': Proveedor.objects.all(),
+        'pedidos': Pedido.objects.all(),
+        'inventarios': Bodega.objects.all(),
+        'turnos': Turno.objects.all(),
+        'movimientos': MovimientoInventario.objects.all(),
+        'clientes': Cliente.objects.all()
+    }
+    return render(request, 'dashboards/supervisor_dashboard.html', context)
 
 
 @login_required
 def operador_dashboard(request):
     if not verificar_cargo(request.user, ['OPERADOR', 'SUPERVISOR', 'ADMIN']):
         return redirect('login')
-    return render(request, 'dashboards/operador_dashboard.html')
+    
+    context = {
+        'user': request.user,
+        'productos': Producto.objects.all(),
+        'categorias': Categoria.objects.all(),
+        'pedidos': Pedido.objects.all(),
+        'inventarios': Bodega.objects.all(),
+        'clientes': Cliente.objects.all()
+    }
+    return render(request, 'dashboards/operador_dashboard.html', context)
 
 
 @login_required
 def cliente_dashboard(request):
     if not verificar_cargo(request.user, ['CLIENTE', 'ADMIN']):
         return redirect('login')
-    return render(request, 'dashboards/cliente_dashboard.html')
+    
+    # Buscar el cliente asociado al usuario actual
+    try:
+        cliente = Cliente.objects.get(email=request.user.email)
+        pedidos = Pedido.objects.filter(cliente=cliente)
+    except Cliente.DoesNotExist:
+        # Si no existe el cliente, crear uno automáticamente
+        cliente = Cliente.objects.create(
+            nombre=request.user.nombre or request.user.usuario,
+            email=request.user.email,
+            telefono=request.user.telefono
+        )
+        pedidos = Pedido.objects.none()
+    
+    context = {
+        'user': request.user,
+        'productos': Producto.objects.all(),  # Mostrar todos los productos para clientes
+        'pedidos': pedidos,
+        'perfil': request.user,
+        'cliente': cliente
+    }
+    return render(request, 'dashboards/cliente_dashboard.html', context)
+
+
+@login_required
+def dashboard_view(request):
+    user = request.user
+    cargo = user.cargo
+
+    context = {'user': user}
+
+    if cargo == 'ADMIN':
+        context.update({
+            'usuarios': Usuario.objects.all(),
+            'productos': Producto.objects.all(),
+            'proveedores': Proveedor.objects.all(),
+            'pedidos': Pedido.objects.all(),
+            'inventarios': Bodega.objects.all(),
+            'reportes': True 
+        })
+        return render(request, 'admin_dashboard.html', context)
+
+    elif cargo == 'SUPERVISOR':
+        context.update({
+            'productos': Producto.objects.all(),
+            'proveedores': Proveedor.objects.all(),
+            'pedidos': Pedido.objects.all(),
+            'inventarios': Bodega.objects.all(),
+            'turnos': Turno.objects.all(),
+            'movimientos': MovimientoInventario.objects.all(),
+            'clientes': Cliente.objects.all()
+        })
+        return render(request, 'dashboards/supervisor_dashboard.html', context)
+
+    elif cargo == 'OPERADOR':
+        context.update({
+            'productos': Producto.objects.all(),
+            'pedidos': Pedido.objects.all(),
+            'inventarios': Bodega.objects.all(),
+            'clientes': Cliente.objects.all()
+        })
+        return render(request, 'operador_dashboard.html', context)
+
+    elif cargo == 'CLIENTE':
+        context.update({
+            'productos': Producto.objects.filter(activo=True),
+            'pedidos': Pedido.objects.filter(cliente=user),
+            'perfil': user
+        })
+        return render(request, 'cliente_dashboard.html', context)
+
+    else:
+        return render(request, 'error.html', {'mensaje': 'No se reconoce el rol del usuario'})
+    
